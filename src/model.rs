@@ -1,13 +1,12 @@
+use crate::vec2::{IVec2, UVec2};
 use crate::Try;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 use std::path::PathBuf;
-use crate::vec2::Vec2;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SudokuModel {
-    pub size: Vec2,
-    pub numbers: Vec<Vec2>,
+    pub size: UVec2,
+    pub numbers: Vec<IVec2>,
 }
 
 impl SudokuModel {

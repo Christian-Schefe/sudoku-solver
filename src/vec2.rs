@@ -1,15 +1,16 @@
-use std::fmt::{Display, Formatter};
-use std::ops::{Add, Div, Mul, Sub};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Debug, Display, Formatter};
+use std::hash::Hash;
+use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, Eq, PartialEq)]
-#[serde(from = "(isize, isize)", into = "(isize, isize)")]
-pub struct Vec2 {
-    x: isize,
-    y: isize,
+#[serde(from = "(T, T)", into = "(T, T)")]
+pub struct Point<T: Clone> {
+    x: T,
+    y: T,
 }
 
-impl Add for Vec2 {
+impl<T: Add<T, Output = T> + Clone> Add<Point<T>> for Point<T> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self {
@@ -20,7 +21,7 @@ impl Add for Vec2 {
     }
 }
 
-impl Sub for Vec2 {
+impl<T: Sub<T, Output = T> + Clone> Sub<Point<T>> for Point<T> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self {
@@ -31,10 +32,10 @@ impl Sub for Vec2 {
     }
 }
 
-impl Mul<isize> for Vec2 {
+impl<T: Mul<T, Output = T> + Copy> Mul<T> for Point<T> {
     type Output = Self;
 
-    fn mul(self, rhs: isize) -> Self {
+    fn mul(self, rhs: T) -> Self {
         Self {
             x: self.x * rhs,
             y: self.y * rhs,
@@ -42,10 +43,10 @@ impl Mul<isize> for Vec2 {
     }
 }
 
-impl Div<isize> for Vec2 {
+impl<T: Div<T, Output = T> + Copy> Div<T> for Point<T> {
     type Output = Self;
 
-    fn div(self, rhs: isize) -> Self {
+    fn div(self, rhs: T) -> Self {
         Self {
             x: self.x / rhs,
             y: self.y / rhs,
@@ -53,36 +54,56 @@ impl Div<isize> for Vec2 {
     }
 }
 
-impl From<(isize, isize)> for Vec2 {
-    fn from((x, y): (isize, isize)) -> Self {
+impl<T: Clone> From<(T, T)> for Point<T> {
+    fn from((x, y): (T, T)) -> Self {
         Self { x, y }
     }
 }
 
-impl Into<(isize, isize)> for Vec2 {
-    fn into(self) -> (isize, isize) {
+impl<T: Clone> Into<(T, T)> for Point<T> {
+    fn into(self) -> (T, T) {
         (self.x, self.y)
     }
 }
 
-impl Display for Vec2 {
+impl<T: Display + Clone> Display for Point<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.x, self.y)
     }
 }
 
-impl Vec2 {
-    pub fn new(x: isize, y: isize) -> Self {
+impl<T: Clone> Point<T> {
+    pub fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
-    pub fn from_index(index: usize, size: Self) -> Self {
+}
+
+impl Point<isize> {
+    pub fn up() -> Self {
+        Self { x: 0, y: -1 }
+    }
+    pub fn down() -> Self {
+        Self { x: 0, y: 1 }
+    }
+    pub fn left() -> Self {
+        Self { x: -1, y: 0 }
+    }
+    pub fn right() -> Self {
+        Self { x: 1, y: 0 }
+    }
+}
+
+impl Point<usize> {
+    pub fn from_index(index: usize, width: usize) -> Self {
         Self {
-            x: (index % size.x as usize) as isize,
-            y: (index / size.x as usize) as isize,
+            x: index % width,
+            y: index / width,
         }
     }
-    pub const UP: Self = Self { x: 0, y: -1 };
-    pub const DOWN: Self = Self { x: 0, y: 1 };
-    pub const LEFT: Self = Self { x: -1, y: 0 };
-    pub const RIGHT: Self = Self { x: 1, y: 0 };
+    pub fn to_index(self, width: usize) -> usize {
+        self.y * width + self.x
+    }
 }
+
+pub type IVec2 = Point<isize>;
+pub type UVec2 = Point<usize>;
