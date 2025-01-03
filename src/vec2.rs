@@ -1,4 +1,6 @@
+use crate::Try;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::Hash;
 use std::ops::{Add, Div, Mul, Sub};
@@ -6,8 +8,8 @@ use std::ops::{Add, Div, Mul, Sub};
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, Eq, PartialEq)]
 #[serde(from = "(T, T)", into = "(T, T)")]
 pub struct Point<T: Clone> {
-    x: T,
-    y: T,
+    pub x: T,
+    pub y: T,
 }
 
 impl<T: Add<T, Output = T> + Clone> Add<Point<T>> for Point<T> {
@@ -75,6 +77,102 @@ impl<T: Display + Clone> Display for Point<T> {
 impl<T: Clone> Point<T> {
     pub fn new(x: T, y: T) -> Self {
         Self { x, y }
+    }
+    pub fn convert<K: Clone + From<T>>(self) -> Point<K> {
+        Point {
+            x: K::from(self.x),
+            y: K::from(self.y),
+        }
+    }
+    pub fn convert_from<K: Clone + Into<T>>(other: Point<K>) -> Self {
+        Point {
+            x: other.x.into(),
+            y: other.y.into(),
+        }
+    }
+    pub fn try_convert<K: Clone + TryFrom<T>>(self) -> Result<Point<K>, K::Error> {
+        Ok(Point {
+            x: K::try_from(self.x)?,
+            y: K::try_from(self.y)?,
+        })
+    }
+
+    pub fn try_convert_from<K: Clone + TryInto<T>>(other: Point<K>) -> Result<Self, K::Error> {
+        Ok(Point {
+            x: other.x.try_into()?,
+            y: other.y.try_into()?,
+        })
+    }
+}
+
+impl<T: num::Integer + Display + Clone + num::ToPrimitive> Point<T> {
+    pub fn loop_2d(width: T, height: T) -> impl Iterator<Item = Self> {
+        num::range(T::zero(), height).flat_map(move |y| {
+            num::range(T::zero(), width.clone()).map(move |x| Self { x, y: y.clone() })
+        })
+    }
+    pub fn loop_box<'a>(start: &'a Self, end: &'a Self) -> impl Iterator<Item = Self> + 'a {
+        num::range(start.y.clone(), end.y.clone()).flat_map(move |y| {
+            num::range(start.x.clone(), end.x.clone()).map(move |x| Self { x, y: y.clone() })
+        })
+    }
+    pub fn loop_line<'a>(
+        start: &'a Self,
+        end: &'a Self,
+        include_end: bool,
+    ) -> Try<impl Iterator<Item = Self> + 'a> {
+        let x_order = end.x.cmp(&start.x);
+        let y_order = end.y.cmp(&start.y);
+        fn try_diagonal<T: num::Integer + Display + Clone>(
+            sx: &T,
+            sy: &T,
+            ex: &T,
+            ey: &T,
+        ) -> Result<T, anyhow::Error> {
+            let dx = ex.clone() - sx.clone();
+            let dy = ey.clone() - sy.clone();
+            if dx == dy {
+                Ok(dx)
+            } else {
+                Err(anyhow::anyhow!(
+                    "Start and end of line are not aligned: dx is {}, but dy is {}",
+                    dx,
+                    dy
+                ))
+            }
+        }
+        let mut steps = match (x_order, y_order) {
+            (Ordering::Equal, Ordering::Equal) => {
+                Err(anyhow::anyhow!("Start and end of line are the same point: {}", start))
+            }
+            (Ordering::Greater, Ordering::Equal) => Ok(end.x.clone() - start.x.clone()),
+            (Ordering::Less, Ordering::Equal) => Ok(start.x.clone() - end.x.clone()),
+            (Ordering::Equal, Ordering::Greater) => Ok(end.y.clone() - start.y.clone()),
+            (Ordering::Equal, Ordering::Less) => Ok(start.y.clone() - end.y.clone()),
+            (Ordering::Greater, Ordering::Greater) => {
+                try_diagonal(&start.x, &start.y, &end.x, &end.y)
+            }
+            (Ordering::Greater, Ordering::Less) => try_diagonal(&start.x, &end.y, &end.x, &start.y),
+            (Ordering::Less, Ordering::Greater) => try_diagonal(&end.x, &start.y, &start.x, &end.y),
+            (Ordering::Less, Ordering::Less) => try_diagonal(&end.x, &end.y, &start.x, &start.y),
+        }?;
+        if include_end {
+            steps = steps + T::one();
+        }
+        let iter = num::range(T::zero(), steps).map(move |i| {
+            let x = match x_order {
+                Ordering::Greater => start.x.clone() + i.clone(),
+                Ordering::Less => start.x.clone() - i.clone(),
+                Ordering::Equal => start.x.clone(),
+            };
+            let y = match y_order {
+                Ordering::Greater => start.y.clone() + i,
+                Ordering::Less => start.y.clone() - i,
+                Ordering::Equal => start.y.clone(),
+            };
+            Self { x, y }
+        });
+        Ok(iter)
     }
 }
 
