@@ -106,14 +106,35 @@ impl<T: Clone> Point<T> {
 }
 
 impl<T: num::Integer + Display + Clone + num::ToPrimitive> Point<T> {
-    pub fn loop_2d(width: T, height: T) -> impl Iterator<Item = Self> {
-        num::range(T::zero(), height).flat_map(move |y| {
-            num::range(T::zero(), width.clone()).map(move |x| Self { x, y: y.clone() })
-        })
+    pub fn zero() -> Self {
+        Self {
+            x: T::zero(),
+            y: T::zero(),
+        }
     }
-    pub fn loop_box<'a>(start: &'a Self, end: &'a Self) -> impl Iterator<Item = Self> + 'a {
-        num::range(start.y.clone(), end.y.clone()).flat_map(move |y| {
-            num::range(start.x.clone(), end.x.clone()).map(move |x| Self { x, y: y.clone() })
+    pub fn one() -> Self {
+        Self {
+            x: T::one(),
+            y: T::one(),
+        }
+    }
+    pub fn loop_box<'a>(
+        start: &Self,
+        end: &Self,
+        include_end: bool,
+    ) -> impl Iterator<Item = Self> + 'a
+    where
+        T: 'a,
+    {
+        let s = start.clone();
+        let e = if include_end {
+            end.clone() + Point::one()
+        } else {
+            end.clone()
+        };
+
+        num::range(s.y.clone(), e.y.clone()).flat_map(move |y| {
+            num::range(s.x.clone(), e.x.clone()).map(move |x| Self { x, y: y.clone() })
         })
     }
     pub fn loop_line<'a>(
@@ -142,9 +163,10 @@ impl<T: num::Integer + Display + Clone + num::ToPrimitive> Point<T> {
             }
         }
         let mut steps = match (x_order, y_order) {
-            (Ordering::Equal, Ordering::Equal) => {
-                Err(anyhow::anyhow!("Start and end of line are the same point: {}", start))
-            }
+            (Ordering::Equal, Ordering::Equal) => Err(anyhow::anyhow!(
+                "Start and end of line are the same point: {}",
+                start
+            )),
             (Ordering::Greater, Ordering::Equal) => Ok(end.x.clone() - start.x.clone()),
             (Ordering::Less, Ordering::Equal) => Ok(start.x.clone() - end.x.clone()),
             (Ordering::Equal, Ordering::Greater) => Ok(end.y.clone() - start.y.clone()),

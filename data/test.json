@@ -1,0 +1,709 @@
+{
+  "size": [
+    9,
+    9
+  ],
+  "numbers": [
+    [
+      1,
+      9
+    ]
+  ],
+  "constraints": [
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            8,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          0,
+          0
+        ],
+        "end": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            1
+          ],
+          [
+            8,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          0
+        ],
+        "end": [
+          5,
+          2
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            2
+          ],
+          [
+            8,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          0
+        ],
+        "end": [
+          8,
+          2
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            3
+          ],
+          [
+            8,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          0,
+          3
+        ],
+        "end": [
+          2,
+          5
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            4
+          ],
+          [
+            8,
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          3
+        ],
+        "end": [
+          5,
+          5
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            5
+          ],
+          [
+            8,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          3
+        ],
+        "end": [
+          8,
+          5
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            6
+          ],
+          [
+            8,
+            6
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          0,
+          6
+        ],
+        "end": [
+          2,
+          8
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            7
+          ],
+          [
+            8,
+            7
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            7,
+            0
+          ],
+          [
+            7,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          6
+        ],
+        "end": [
+          5,
+          8
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            0,
+            8
+          ],
+          [
+            8,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "line",
+        "points": [
+          [
+            8,
+            0
+          ],
+          [
+            8,
+            8
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "unique",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          6
+        ],
+        "end": [
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            6,
+            1
+          ],
+          [
+            5,
+            7
+          ]
+        ]
+      },
+      "property": {
+        "given": 1
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            4,
+            1
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            8
+          ]
+        ]
+      },
+      "property": {
+        "given": 2
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            3,
+            4
+          ]
+        ]
+      },
+      "property": {
+        "given": 3
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            8
+          ],
+          [
+            6,
+            3
+          ]
+        ]
+      },
+      "property": {
+        "given": 4
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            3,
+            0
+          ],
+          [
+            5,
+            4
+          ]
+        ]
+      },
+      "property": {
+        "given": 5
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            5,
+            2
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            3,
+            6
+          ]
+        ]
+      },
+      "property": {
+        "given": 6
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            5,
+            3
+          ],
+          [
+            8,
+            8
+          ]
+        ]
+      },
+      "property": {
+        "given": 7
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            3,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ]
+      },
+      "property": {
+        "given": 8
+      }
+    },
+    {
+      "constraint_type": "property",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            1,
+            0
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            4,
+            4
+          ]
+        ]
+      },
+      "property": {
+        "given": 9
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            8,
+            0
+          ],
+          [
+            5,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            4,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            6,
+            5
+          ],
+          [
+            4,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "constraint_type": "thermometer",
+      "line": {
+        "points": [
+          [
+            1,
+            8
+          ],
+          [
+            3,
+            8
+          ]
+        ]
+      }
+    }
+  ]
+}

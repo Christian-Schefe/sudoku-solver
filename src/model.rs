@@ -5,7 +5,7 @@ use crate::model::constraint::{Constraint, ConstraintSpecifier};
 use crate::vec2::{IVec2, UVec2};
 use crate::Try;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,9 +41,11 @@ impl SudokuSpecifier {
             .iter()
             .map(|c| c.build_constraint())
             .collect();
+        let number_indices = numbers.iter().enumerate().map(|(i, &n)| (n, i)).collect();
         SudokuModel {
             size: self.size.clone(),
             numbers,
+            number_indices,
             constraints,
         }
     }
@@ -53,5 +55,14 @@ impl SudokuSpecifier {
 pub struct SudokuModel {
     pub size: UVec2,
     pub numbers: Vec<isize>,
+    pub number_indices: HashMap<isize, usize>,
     pub constraints: Vec<Constraint>,
+}
+
+impl SudokuModel {
+    pub fn from_file(path: &PathBuf) -> Try<Self> {
+        let specifier = SudokuSpecifier::from_file(path)?;
+        specifier.to_file(path, true)?;
+        Ok(specifier.build_model())
+    }
 }

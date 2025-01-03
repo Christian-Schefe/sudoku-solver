@@ -8,8 +8,11 @@ pub struct Region {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "region")]
+#[serde(rename_all = "snake_case", tag = "region_type")]
 pub enum RegionSpecifier {
+    Many {
+        cells: Vec<UVec2>,
+    },
     Box {
         start: UVec2,
         end: UVec2,
@@ -35,8 +38,11 @@ pub enum SetOperation {
 impl RegionSpecifier {
     pub fn build_region(&self) -> Region {
         match self {
+            RegionSpecifier::Many { cells } => Region {
+                cells: cells.clone().into_iter().collect(),
+            },
             RegionSpecifier::Box { start, end } => {
-                let cells = UVec2::loop_box(start, end).collect();
+                let cells = UVec2::loop_box(start, end, true).collect();
                 Region { cells }
             }
             RegionSpecifier::Line { points } => {
