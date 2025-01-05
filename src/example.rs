@@ -115,3 +115,269 @@ pub fn test_model(path: Option<&PathBuf>) -> SudokuSpecifier {
     }
     specifier
 }
+
+pub fn killer_test_model(path: Option<&PathBuf>) -> SudokuSpecifier {
+    let mut constraints = sudoku_constraints();
+    given_constraints(
+        &mut constraints,
+        &vec![
+            (2, vec![UVec2::new(4, 6)]),
+            (3, vec![UVec2::new(0, 4)]),
+            (4, vec![UVec2::new(3, 0)]),
+            (
+                5,
+                vec![UVec2::new(6, 2), UVec2::new(8, 5), UVec2::new(7, 7)],
+            ),
+            (6, vec![UVec2::new(5, 1)]),
+            (7, vec![UVec2::new(4, 3)]),
+            (8, vec![UVec2::new(1, 8)]),
+            (9, vec![UVec2::new(1, 0)]),
+        ],
+    );
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(0, 0),
+            end: UVec2::new(0, 1),
+        },
+        sum: 7,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(1, 0), UVec2::new(1, 1), UVec2::new(2, 0)],
+        },
+        sum: 16,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::ManyBox {
+            boxes: vec![
+                (UVec2::new(3, 0), UVec2::new(4, 1)),
+                (UVec2::new(2, 1), UVec2::new(2, 1)),
+            ],
+        },
+        sum: 27,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(5, 0),
+            end: UVec2::new(5, 2),
+        },
+        sum: 9,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(6, 0),
+            end: UVec2::new(8, 0),
+        },
+        sum: 18,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(6, 1),
+            end: UVec2::new(7, 1),
+        },
+        sum: 6,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(8, 1),
+            end: UVec2::new(8, 2),
+        },
+        sum: 10,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(0, 2)],
+        },
+        sum: 4,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(1, 2),
+            end: UVec2::new(2, 2),
+        },
+        sum: 10,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(3, 2),
+            end: UVec2::new(4, 2),
+        },
+        sum: 17,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(6, 2), UVec2::new(6, 3), UVec2::new(7, 2)],
+        },
+        sum: 19,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(0, 3),
+            end: UVec2::new(1, 3),
+        },
+        sum: 10,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(2, 3),
+            end: UVec2::new(3, 3),
+        },
+        sum: 10,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::ManyBox {
+            boxes: vec![
+                (UVec2::new(4, 3), UVec2::new(5, 3)),
+                (UVec2::new(5, 4), UVec2::new(5, 5)),
+            ],
+        },
+        sum: 29,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(7, 3),
+            end: UVec2::new(8, 3),
+        },
+        sum: 5,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::ManyBox {
+            boxes: vec![
+                (UVec2::new(0, 4), UVec2::new(0, 5)),
+                (UVec2::new(1, 4), UVec2::new(1, 6)),
+            ],
+        },
+        sum: 25,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(2, 4),
+            end: UVec2::new(2, 5),
+        },
+        sum: 6,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(3, 4),
+            end: UVec2::new(4, 4),
+        },
+        sum: 6,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(6, 4), UVec2::new(7, 4), UVec2::new(7, 5)],
+        },
+        sum: 14,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(8, 4)],
+        },
+        sum: 6,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(3, 5),
+            end: UVec2::new(4, 5),
+        },
+        sum: 9,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(6, 5),
+            end: UVec2::new(6, 6),
+        },
+        sum: 16,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(8, 5),
+            end: UVec2::new(8, 6),
+        },
+        sum: 9,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(0, 6)],
+        },
+        sum: 1,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::ManyBox {
+            boxes: vec![
+                (UVec2::new(2, 6), UVec2::new(2, 6)),
+                (UVec2::new(1, 7), UVec2::new(3, 7)),
+            ],
+        },
+        sum: 21,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(3, 6), UVec2::new(4, 6), UVec2::new(4, 7)],
+        },
+        sum: 9,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(5, 6)],
+        },
+        sum: 7,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(7, 6), UVec2::new(7, 7), UVec2::new(8, 7)],
+        },
+        sum: 20,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(0, 7)],
+        },
+        sum: 9,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::ManyBox {
+            boxes: vec![
+                (UVec2::new(5, 7), UVec2::new(5, 8)),
+                (UVec2::new(3, 8), UVec2::new(4, 8)),
+            ],
+        },
+        sum: 21,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(6, 7),
+            end: UVec2::new(6, 8),
+        },
+        sum: 8,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Many {
+            cells: vec![UVec2::new(0, 8)],
+        },
+        sum: 7,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(1, 8),
+            end: UVec2::new(2, 8),
+        },
+        sum: 10,
+    });
+    constraints.push(ConstraintSpecifier::Killer {
+        region: RegionSpecifier::Box {
+            start: UVec2::new(7, 8),
+            end: UVec2::new(8, 8),
+        },
+        sum: 4,
+    });
+    let specifier = SudokuSpecifier {
+        size: UVec2::new(9, 9),
+        numbers: vec![IVec2::new(1, 9)],
+        constraints,
+    };
+    if let Some(path) = path {
+        specifier.to_file(path, true).unwrap();
+    }
+    specifier
+}

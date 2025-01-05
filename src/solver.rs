@@ -4,12 +4,34 @@ use crate::model::SudokuModel;
 use crate::vec2::UVec2;
 use std::collections::{HashMap, HashSet};
 
-#[derive(Clone)]
-pub struct SolverState {
-    pub grid: Vec<Vec<Cell>>,
+struct Precomputed {
+    highest_sums: Vec<isize>,
+    lowest_sums: Vec<isize>,
 }
 
-impl SolverState {
+impl Precomputed {
+    fn new(model: &SudokuModel) -> Self {
+        let number_count = model.numbers.len();
+        let mut highest_sums = vec![0; number_count + 1];
+        let mut lowest_sums = vec![0; number_count + 1];
+        for i in 0..number_count {
+            highest_sums[i + 1] = model.numbers[number_count - i - 1] + highest_sums[i];
+            lowest_sums[i + 1] = model.numbers[i] + lowest_sums[i];
+        }
+        Self {
+            highest_sums,
+            lowest_sums,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct SolverState<'a> {
+    pub grid: Vec<Vec<Cell>>,
+    precomputed: &'a Precomputed,
+}
+
+impl<'a> SolverState<'a> {
     pub fn print_grid(&self) {
         for row in &self.grid {
             for cell in row {
@@ -78,9 +100,16 @@ fn empty_grid(size: &UVec2, candidates: &Vec<isize>) -> Vec<Vec<Cell>> {
 
 pub fn solve(model: SudokuModel) {
     let grid = empty_grid(&model.size, &model.numbers);
-    let mut state = SolverState { grid };
+    let precomputed = Precomputed::new(&model);
+    let mut state = SolverState {
+        grid,
+        precomputed: &precomputed,
+    };
 
-    bifurcate(&model, &mut state);
+    let res = bifurcate(&model, &mut state);
+    if res.is_none() {
+        println!("No solution found");
+    }
     state.print_grid();
 }
 
@@ -143,9 +172,54 @@ fn limit_state(
         } => {
             limit_relationship_clue(first, second, relationship, state, &mut changed)?;
         }
+        Constraint::Killer { region, sum } => {
+            limit_killer_clue(region, sum, state, &mut changed)?;
+        }
         _ => {}
     }
     Some(changed)
+}
+
+fn limit_killer_clue(
+    region: &Region,
+    sum: &isize,
+    state: &mut SolverState,
+    changed: &mut bool,
+) -> Option<()> {
+    let mut sum_so_far = 0;
+    let mut unknown_cells = Vec::new();
+    for pos in &region.cells {
+        let cell = &state.grid[pos.y][pos.x];
+        if let Some(value) = cell.value {
+            sum_so_far += value;
+        } else {
+            unknown_cells.push(pos);
+        }
+    }
+    if sum_so_far > *sum {
+        return None;
+    }
+    if sum_so_far == *sum {
+        return if !unknown_cells.is_empty() {
+            None
+        } else {
+            Some(())
+        }
+    }
+    let lowest_sum = state.precomputed.lowest_sums[unknown_cells.len()];
+    let highest_sum = state.precomputed.highest_sums[unknown_cells.len()];
+    if sum_so_far + highest_sum < *sum {
+        return None;
+    }
+    if sum_so_far + lowest_sum > *sum {
+        return None;
+    }
+    if unknown_cells.len() == 1 {
+        let pos = unknown_cells[0];
+        let cell = &mut state.grid[pos.y][pos.x];
+        *changed |= cell.limit(|c| sum_so_far + c == *sum)?;
+    }
+    Some(())
 }
 
 fn limit_relationship_clue(

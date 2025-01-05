@@ -430,39 +430,8 @@
         "region_type": "many",
         "cells": [
           [
-            6,
-            1
-          ],
-          [
-            5,
-            7
-          ]
-        ]
-      },
-      "property": {
-        "given": 1
-      }
-    },
-    {
-      "constraint_type": "property",
-      "region": {
-        "region_type": "many",
-        "cells": [
-          [
             4,
-            1
-          ],
-          [
-            7,
-            7
-          ],
-          [
-            2,
-            5
-          ],
-          [
-            5,
-            8
+            6
           ]
         ]
       },
@@ -476,7 +445,7 @@
         "region_type": "many",
         "cells": [
           [
-            3,
+            0,
             4
           ]
         ]
@@ -491,16 +460,8 @@
         "region_type": "many",
         "cells": [
           [
-            2,
-            2
-          ],
-          [
-            0,
-            8
-          ],
-          [
-            6,
-            3
+            3,
+            0
           ]
         ]
       },
@@ -514,12 +475,16 @@
         "region_type": "many",
         "cells": [
           [
-            3,
-            0
+            6,
+            2
           ],
           [
-            5,
-            4
+            8,
+            5
+          ],
+          [
+            7,
+            7
           ]
         ]
       },
@@ -534,15 +499,7 @@
         "cells": [
           [
             5,
-            2
-          ],
-          [
-            1,
-            7
-          ],
-          [
-            3,
-            6
+            1
           ]
         ]
       },
@@ -556,12 +513,8 @@
         "region_type": "many",
         "cells": [
           [
-            5,
+            4,
             3
-          ],
-          [
-            8,
-            8
           ]
         ]
       },
@@ -575,16 +528,8 @@
         "region_type": "many",
         "cells": [
           [
-            3,
-            5
-          ],
-          [
-            2,
-            6
-          ],
-          [
-            4,
-            7
+            1,
+            8
           ]
         ]
       },
@@ -600,14 +545,6 @@
           [
             1,
             0
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            4,
-            4
           ]
         ]
       },
@@ -616,94 +553,602 @@
       }
     },
     {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          0,
+          0
+        ],
+        "end": [
+          0,
+          1
+        ]
+      },
+      "sum": 7
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
           [
-            0,
+            1,
             0
           ],
           [
-            0,
-            5
-          ]
-        ]
-      }
-    },
-    {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
-          [
-            8,
-            0
-          ],
-          [
-            5,
-            0
-          ]
-        ]
-      }
-    },
-    {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
-          [
-            4,
-            3
+            1,
+            1
           ],
           [
             2,
-            3
+            0
           ]
         ]
-      }
+      },
+      "sum": 16
     },
     {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many_box",
+        "boxes": [
           [
-            6,
-            5
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              1
+            ]
           ],
           [
-            4,
-            5
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              1
+            ]
           ]
         ]
-      }
+      },
+      "sum": 27
     },
     {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          5,
+          0
+        ],
+        "end": [
+          5,
+          2
+        ]
+      },
+      "sum": 9
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          0
+        ],
+        "end": [
+          8,
+          0
+        ]
+      },
+      "sum": 18
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          1
+        ],
+        "end": [
+          7,
+          1
+        ]
+      },
+      "sum": 6
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          8,
+          1
+        ],
+        "end": [
+          8,
+          2
+        ]
+      },
+      "sum": 10
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
           [
-            8,
-            6
-          ],
-          [
-            8,
+            0,
             2
           ]
         ]
-      }
+      },
+      "sum": 4
     },
     {
-      "constraint_type": "thermometer",
-      "line": {
-        "points": [
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          1,
+          2
+        ],
+        "end": [
+          2,
+          2
+        ]
+      },
+      "sum": 10
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          2
+        ],
+        "end": [
+          4,
+          2
+        ]
+      },
+      "sum": 17
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
           [
-            1,
-            8
+            6,
+            2
           ],
           [
+            6,
+            3
+          ],
+          [
+            7,
+            2
+          ]
+        ]
+      },
+      "sum": 19
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          0,
+          3
+        ],
+        "end": [
+          1,
+          3
+        ]
+      },
+      "sum": 10
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          2,
+          3
+        ],
+        "end": [
+          3,
+          3
+        ]
+      },
+      "sum": 10
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many_box",
+        "boxes": [
+          [
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          [
+            [
+              5,
+              4
+            ],
+            [
+              5,
+              5
+            ]
+          ]
+        ]
+      },
+      "sum": 29
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          7,
+          3
+        ],
+        "end": [
+          8,
+          3
+        ]
+      },
+      "sum": 5
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many_box",
+        "boxes": [
+          [
+            [
+              0,
+              4
+            ],
+            [
+              0,
+              5
+            ]
+          ],
+          [
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              6
+            ]
+          ]
+        ]
+      },
+      "sum": 25
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          2,
+          4
+        ],
+        "end": [
+          2,
+          5
+        ]
+      },
+      "sum": 6
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          4
+        ],
+        "end": [
+          4,
+          4
+        ]
+      },
+      "sum": 6
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "sum": 14
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            8,
+            4
+          ]
+        ]
+      },
+      "sum": 6
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          3,
+          5
+        ],
+        "end": [
+          4,
+          5
+        ]
+      },
+      "sum": 9
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          5
+        ],
+        "end": [
+          6,
+          6
+        ]
+      },
+      "sum": 16
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          8,
+          5
+        ],
+        "end": [
+          8,
+          6
+        ]
+      },
+      "sum": 9
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            0,
+            6
+          ]
+        ]
+      },
+      "sum": 1
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many_box",
+        "boxes": [
+          [
+            [
+              2,
+              6
+            ],
+            [
+              2,
+              6
+            ]
+          ],
+          [
+            [
+              1,
+              7
+            ],
+            [
+              3,
+              7
+            ]
+          ]
+        ]
+      },
+      "sum": 21
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
             3,
+            6
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ]
+      },
+      "sum": 9
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            5,
+            6
+          ]
+        ]
+      },
+      "sum": 7
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            7,
+            6
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            8,
+            7
+          ]
+        ]
+      },
+      "sum": 20
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            0,
+            7
+          ]
+        ]
+      },
+      "sum": 9
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many_box",
+        "boxes": [
+          [
+            [
+              5,
+              7
+            ],
+            [
+              5,
+              8
+            ]
+          ],
+          [
+            [
+              3,
+              8
+            ],
+            [
+              4,
+              8
+            ]
+          ]
+        ]
+      },
+      "sum": 21
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          6,
+          7
+        ],
+        "end": [
+          6,
+          8
+        ]
+      },
+      "sum": 8
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "many",
+        "cells": [
+          [
+            0,
             8
           ]
         ]
-      }
+      },
+      "sum": 7
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          1,
+          8
+        ],
+        "end": [
+          2,
+          8
+        ]
+      },
+      "sum": 10
+    },
+    {
+      "constraint_type": "killer",
+      "region": {
+        "region_type": "box",
+        "start": [
+          7,
+          8
+        ],
+        "end": [
+          8,
+          8
+        ]
+      },
+      "sum": 4
     }
   ]
 }

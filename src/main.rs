@@ -16,7 +16,7 @@ pub type Try<T> = Result<T, anyhow::Error>;
 
 fn main() {
     let args = Args::parse();
-    let model = example::test_model(Some(&args.path)).build_model();
+    let model = example::killer_test_model(Some(&args.path)).build_model();
     SudokuModel::from_file(&args.path).unwrap();
     solver::solve(model);
 }

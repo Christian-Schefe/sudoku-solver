@@ -17,6 +17,9 @@ pub enum RegionSpecifier {
         start: UVec2,
         end: UVec2,
     },
+    ManyBox {
+        boxes: Vec<(UVec2, UVec2)>,
+    },
     Line {
         points: Vec<UVec2>,
     },
@@ -43,6 +46,13 @@ impl RegionSpecifier {
             },
             RegionSpecifier::Box { start, end } => {
                 let cells = UVec2::loop_box(start, end, true).collect();
+                Region { cells }
+            }
+            RegionSpecifier::ManyBox { boxes } => {
+                let cells = boxes
+                    .iter()
+                    .flat_map(|(start, end)| UVec2::loop_box(start, end, true))
+                    .collect();
                 Region { cells }
             }
             RegionSpecifier::Line { points } => {
