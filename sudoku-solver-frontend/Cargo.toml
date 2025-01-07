@@ -1,0 +1,9 @@
+[package]
+name = "sudoku-solver-frontend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.15.1"
+bevy_prototype_lyon = "0.13.0"
+sudoku-solver = { path = ".." }

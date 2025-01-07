@@ -1,18 +1,12 @@
-use crate::model::SudokuModel;
-use clap::Parser;
 use std::path::PathBuf;
 
-mod example;
-mod model;
-mod solver;
-mod vec2;
+use clap::Parser;
+use sudoku_solver::{example, model::SudokuModel, solver};
 
 #[derive(Debug, Parser)]
 struct Args {
     path: PathBuf,
 }
-
-pub type Try<T> = Result<T, anyhow::Error>;
 
 fn main() {
     let args = Args::parse();

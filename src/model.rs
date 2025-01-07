@@ -2,7 +2,7 @@ pub mod constraint;
 pub mod region;
 
 use crate::model::constraint::{Constraint, ConstraintSpecifier};
-use crate::vec2::{IVec2, UVec2};
+use glam::IVec2;
 use crate::Try;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -10,7 +10,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SudokuSpecifier {
-    pub size: UVec2,
+    pub size: IVec2,
     pub numbers: Vec<IVec2>,
     pub constraints: Vec<ConstraintSpecifier>,
 }
@@ -33,8 +33,8 @@ impl SudokuSpecifier {
     }
 
     pub fn build_model(&self) -> SudokuModel {
-        let number_set: HashSet<isize> = self.numbers.iter().flat_map(|v| v.x..=v.y).collect();
-        let mut numbers = number_set.into_iter().collect::<Vec<isize>>();
+        let number_set: HashSet<i32> = self.numbers.iter().flat_map(|v| v.x..=v.y).collect();
+        let mut numbers = number_set.into_iter().collect::<Vec<i32>>();
         numbers.sort_unstable();
         let constraints = self
             .constraints
@@ -53,9 +53,9 @@ impl SudokuSpecifier {
 
 #[derive(Debug, Clone)]
 pub struct SudokuModel {
-    pub size: UVec2,
-    pub numbers: Vec<isize>,
-    pub number_indices: HashMap<isize, usize>,
+    pub size: IVec2,
+    pub numbers: Vec<i32>,
+    pub number_indices: HashMap<i32, usize>,
     pub constraints: Vec<Constraint>,
 }
 

@@ -1,5 +1,5 @@
 use crate::model::region::{Line, LineSpecifier, Region, RegionSpecifier};
-use crate::vec2::UVec2;
+use glam::IVec2;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13,15 +13,15 @@ pub enum ConstraintSpecifier {
     },
     Killer {
         region: RegionSpecifier,
-        sum: isize,
+        sum: i32,
     },
     Arrow {
         region: RegionSpecifier,
-        tail: UVec2,
+        tail: IVec2,
     },
     Relationship {
-        first: UVec2,
-        second: UVec2,
+        first: IVec2,
+        second: IVec2,
         relationship: Relationship,
     },
     Property {
@@ -46,7 +46,7 @@ pub enum Relationship {
 pub enum Property {
     Even,
     Odd,
-    Given(isize),
+    Given(i32),
 }
 
 #[derive(Debug, Clone)]
@@ -55,15 +55,15 @@ pub enum Constraint {
     Thermometer(Line),
     Killer {
         region: Region,
-        sum: isize,
+        sum: i32,
     },
     Arrow {
         region: Region,
-        tail: UVec2,
+        tail: IVec2,
     },
     Relationship {
-        first: UVec2,
-        second: UVec2,
+        first: IVec2,
+        second: IVec2,
         relationship: Relationship,
     },
     Property {

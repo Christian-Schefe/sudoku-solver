@@ -1,12 +1,12 @@
 use crate::model::constraint::{Constraint, Property, Relationship};
 use crate::model::region::{Line, Region};
 use crate::model::SudokuModel;
-use crate::vec2::UVec2;
+use glam::IVec2;
 use std::collections::{HashMap, HashSet};
 
 struct Precomputed {
-    highest_sums: Vec<isize>,
-    lowest_sums: Vec<isize>,
+    highest_sums: Vec<i32>,
+    lowest_sums: Vec<i32>,
 }
 
 impl Precomputed {
@@ -55,19 +55,25 @@ impl<'a> SolverState<'a> {
     fn is_solved(&self) -> bool {
         self.grid.iter().flatten().all(|cell| cell.value.is_some())
     }
+    fn get(&self, pos: &IVec2) -> &Cell {
+        &self.grid[pos.y as usize][pos.x as usize]
+    }
+    fn get_mut(&mut self, pos: &IVec2) -> &mut Cell {
+        &mut self.grid[pos.y as usize][pos.x as usize]
+    }
 }
 
 #[derive(Clone)]
 pub struct Cell {
-    pub pos: UVec2,
-    pub value: Option<isize>,
-    pub candidates: Vec<isize>,
+    pub pos: IVec2,
+    pub value: Option<i32>,
+    pub candidates: Vec<i32>,
 }
 
 impl Cell {
     fn limit<F>(&mut self, filter: F) -> Option<bool>
     where
-        F: Fn(&isize) -> bool,
+        F: Fn(&i32) -> bool,
     {
         let old_len = self.candidates.len();
         self.candidates.retain(&filter);
@@ -78,18 +84,18 @@ impl Cell {
         }
         Some(self.candidates.len() != old_len)
     }
-    fn set_value(&mut self, value: isize) {
+    fn set_value(&mut self, value: i32) {
         self.value = Some(value);
         self.candidates.clear();
     }
 }
 
-fn empty_grid(size: &UVec2, candidates: &Vec<isize>) -> Vec<Vec<Cell>> {
+fn empty_grid(size: &IVec2, candidates: &Vec<i32>) -> Vec<Vec<Cell>> {
     (0..size.y)
         .map(|y| {
             (0..size.x)
                 .map(|x| Cell {
-                    pos: UVec2::new(x, y),
+                    pos: IVec2::new(x, y),
                     value: None,
                     candidates: candidates.clone(),
                 })
@@ -129,7 +135,7 @@ fn bifurcate(model: &SudokuModel, state: &mut SolverState) -> Option<()> {
     let candidates = lowest.candidates.clone();
     for candidate in candidates {
         let mut new_state = state.clone();
-        new_state.grid[pos.y][pos.x].set_value(candidate);
+        new_state.get_mut(pos).set_value(candidate);
         if bifurcate(model, &mut new_state).is_some() {
             *state = new_state;
             return Some(());
@@ -182,14 +188,14 @@ fn limit_state(
 
 fn limit_killer_clue(
     region: &Region,
-    sum: &isize,
+    sum: &i32,
     state: &mut SolverState,
     changed: &mut bool,
 ) -> Option<()> {
     let mut sum_so_far = 0;
     let mut unknown_cells = Vec::new();
     for pos in &region.cells {
-        let cell = &state.grid[pos.y][pos.x];
+        let cell = state.get(pos);
         if let Some(value) = cell.value {
             sum_so_far += value;
         } else {
@@ -204,7 +210,7 @@ fn limit_killer_clue(
             None
         } else {
             Some(())
-        }
+        };
     }
     let lowest_sum = state.precomputed.lowest_sums[unknown_cells.len()];
     let highest_sum = state.precomputed.highest_sums[unknown_cells.len()];
@@ -216,21 +222,21 @@ fn limit_killer_clue(
     }
     if unknown_cells.len() == 1 {
         let pos = unknown_cells[0];
-        let cell = &mut state.grid[pos.y][pos.x];
+        let cell = state.get_mut(pos);
         *changed |= cell.limit(|c| sum_so_far + c == *sum)?;
     }
     Some(())
 }
 
 fn limit_relationship_clue(
-    first: &UVec2,
-    second: &UVec2,
+    first: &IVec2,
+    second: &IVec2,
     relationship: &Relationship,
     state: &mut SolverState,
     changed: &mut bool,
 ) -> Option<()> {
-    let first_value = state.grid[first.y][first.x].value;
-    let second_value = state.grid[second.y][second.x].value;
+    let first_value = state.get(first).value;
+    let second_value = state.get(second).value;
     if first_value.is_none() && second_value.is_none() {
         return None;
     }
@@ -277,8 +283,8 @@ fn limit_relationship_clue(
         } else {
             (false, second, first)
         };
-        let value = state.grid[present.y][present.x].value.unwrap();
-        let cell = &mut state.grid[not_present.y][not_present.x];
+        let value = state.get(present).value.unwrap();
+        let cell = state.get_mut(not_present);
         *changed |= cell.limit(|c| match relationship {
             Relationship::Less => {
                 if first_is_present {
@@ -310,7 +316,7 @@ fn limit_property_clue(
     changed: &mut bool,
 ) -> Option<()> {
     for pos in &region.cells {
-        let cell = &mut state.grid[pos.y][pos.x];
+        let cell = state.get_mut(pos);
         if let Some(value) = cell.value {
             match property {
                 Property::Even => {
@@ -353,7 +359,7 @@ fn limit_thermometer_clue(
     let mut offset = 0;
     let min_indices: Vec<usize> = (0..len)
         .map(|i| {
-            let cell = &state.grid[line.cells[i].y][line.cells[i].x];
+            let cell = state.get(&line.cells[i]);
             if let Some(value) = cell.value {
                 let value_index = model.number_indices[&value];
                 if value_index < i + offset {
@@ -372,7 +378,7 @@ fn limit_thermometer_clue(
         .collect::<Option<_>>()?;
 
     for (i, pos) in line.cells.iter().enumerate() {
-        let cell = &mut state.grid[pos.y][pos.x];
+        let cell = state.get_mut(pos);
         if cell.value.is_some() {
             continue;
         }
@@ -384,7 +390,7 @@ fn limit_thermometer_clue(
 fn limit_unique_clue(region: &Region, state: &mut SolverState, changed: &mut bool) -> Option<()> {
     let mut placed = HashSet::new();
     for pos in &region.cells {
-        let cell = &mut state.grid[pos.y][pos.x];
+        let cell = state.get_mut(pos);
         if let Some(value) = cell.value {
             if !placed.insert(value) {
                 return None;
@@ -392,7 +398,7 @@ fn limit_unique_clue(region: &Region, state: &mut SolverState, changed: &mut boo
         }
     }
     for pos in &region.cells {
-        let cell = &mut state.grid[pos.y][pos.x];
+        let cell = state.get_mut(pos);
         if cell.value.is_some() {
             continue;
         }
@@ -406,7 +412,7 @@ fn limit_unique_clue(region: &Region, state: &mut SolverState, changed: &mut boo
 fn find_obvious_pairs(region: &Region, state: &mut SolverState, changed: &mut bool) -> Option<()> {
     let mut pairs = HashMap::new();
     for pos in &region.cells {
-        let cell = &state.grid[pos.y][pos.x];
+        let cell = state.get(pos);
         if cell.value.is_some() {
             continue;
         }
@@ -427,7 +433,7 @@ fn find_obvious_pairs(region: &Region, state: &mut SolverState, changed: &mut bo
                 if positions.contains(&pos) {
                     continue;
                 }
-                let cell = &mut state.grid[pos.y][pos.x];
+                let cell = state.get_mut(pos);
                 if cell.value.is_some() {
                     continue;
                 }
@@ -442,24 +448,24 @@ fn find_hidden_pairs(region: &Region, state: &mut SolverState, changed: &mut boo
     let possible_numbers = region
         .cells
         .iter()
-        .flat_map(|cell| state.grid[cell.y][cell.x].candidates.clone())
-        .collect::<HashSet<isize>>();
+        .flat_map(|cell| state.get(cell).candidates.clone())
+        .collect::<HashSet<i32>>();
     let free_spots = region
         .cells
         .iter()
-        .filter(|cell| state.grid[cell.y][cell.x].value.is_none())
+        .filter(|cell| state.get(cell).value.is_none())
         .collect::<Vec<_>>();
     if possible_numbers.len() < free_spots.len() {
         return None;
     }
     if possible_numbers.len() == free_spots.len() {
         for pos in &free_spots {
-            let cell = &mut state.grid[pos.y][pos.x];
+            let cell = state.get_mut(pos);
             *changed |= cell.limit(|c| possible_numbers.contains(c))?;
         }
         let mut possible_spots = HashMap::new();
         for pos in &free_spots {
-            let cell = &state.grid[pos.y][pos.x];
+            let cell = state.get(pos);
             for candidate in &cell.candidates {
                 possible_spots
                     .entry(*candidate)
@@ -483,7 +489,7 @@ fn find_hidden_pairs(region: &Region, state: &mut SolverState, changed: &mut boo
         for (_, (numbers, spots)) in &possible_spots_inverse {
             if numbers.len() == spots.len() {
                 for pos in spots {
-                    let cell = &mut state.grid[pos.y][pos.x];
+                    let cell = state.get_mut(pos);
                     *changed |= cell.limit(|c| numbers.contains(c))?;
                 }
             }
