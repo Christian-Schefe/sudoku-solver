@@ -4,18 +4,18 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 use sudoku_solver::model::region::Region;
-use tess::geom::euclid::Translation2D;
 
-use crate::region::get_region_polygon;
+use crate::{region::get_region_polygon, MouseWorldPos};
 
 #[derive(Component)]
-struct Grid {
+pub struct Grid {
     cells: Vec<Vec<Entity>>,
     model: sudoku_solver::model::SudokuModel,
+    offset: Vec2,
 }
 
 #[derive(Component)]
-struct CellPos {
+pub struct CellPos {
     pos: IVec2,
 }
 
@@ -27,11 +27,11 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let font = asset_server.load("FiraMono-Medium.ttf");
 
-    for row in 0..size.y {
+    for y in 0..size.y {
         let mut row_cells = Vec::new();
-        for col in 0..size.x {
-            let pos = IVec2::new(col, row);
-            let vec = Vec3::new(row as f32, col as f32, 0f32) - center;
+        for x in 0..size.x {
+            let pos = IVec2::new(x, y);
+            let vec = Vec3::new(x as f32, y as f32, 0f32) - center;
             let cell = commands
                 .spawn((
                     CellPos { pos },
@@ -49,7 +49,11 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
         }
         cells.push(row_cells);
     }
-    commands.spawn(Grid { cells, model });
+    commands.spawn(Grid {
+        cells,
+        model,
+        offset: center.truncate(),
+    });
     setup_grid_lines(&mut commands, size);
 
     commands.spawn((
@@ -79,7 +83,7 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Stroke {
             color: Color::Srgba(LIGHT_SKY_BLUE),
-            options: StrokeOptions::default().with_line_width(0.2)
+            options: StrokeOptions::default().with_line_width(0.2),
         },
         Fill::color(Color::NONE),
     ));
@@ -120,102 +124,22 @@ fn setup_line(commands: &mut Commands, size: IVec2, index: i32, is_row: bool) {
     ));
 }
 
-fn get_selector_shape(width: f32, neighbours: &[bool; 8]) -> Path {
-    fn get_corner_shape(width: f32) -> Path {
-        let shape = shapes::RegularPolygon {
-            sides: 4,
-            feature: shapes::RegularPolygonFeature::SideLength(width),
-            ..shapes::RegularPolygon::default()
-        };
-        GeometryBuilder::build_as(&shape)
-    }
-    fn get_edge_shape(width: f32, is_horizontal: bool) -> Path {
-        let half = width / 2.;
-        let opposite = (1.0 - width * 2.0) / 2.;
-        let shape = shapes::Polygon {
-            points: if is_horizontal {
-                vec![
-                    Vec2::new(-opposite, -half),
-                    Vec2::new(opposite, -half),
-                    Vec2::new(opposite, half),
-                    Vec2::new(-opposite, half),
-                ]
-            } else {
-                vec![
-                    Vec2::new(-half, -opposite),
-                    Vec2::new(half, -opposite),
-                    Vec2::new(half, opposite),
-                    Vec2::new(-half, opposite),
-                ]
-            },
-            closed: true,
-        };
-        GeometryBuilder::build_as(&shape)
-    }
-    let corner = get_corner_shape(width);
-    let hori_edge = get_edge_shape(width, true);
-    let vert_edge = get_edge_shape(width, false);
-
-    let maybe_corner = |hori: bool, vert: bool, diagonal: bool, point: Vec2| {
-        if vert && hori && diagonal {
-            return None;
-        }
-        let translation = Translation2D::new(point.x, point.y);
-        Some(Path(corner.clone().0.transformed(&translation)))
-    };
-    let maybe_hori_edge = |top: bool, point: Vec2| {
-        if top {
-            return None;
-        }
-        let translation = Translation2D::new(point.x, point.y);
-        Some(Path(hori_edge.clone().0.transformed(&translation)))
-    };
-    let maybe_vert_edge = |left: bool, point: Vec2| {
-        if left {
-            return None;
-        }
-        let translation = Translation2D::new(point.x, point.y);
-        Some(Path(vert_edge.clone().0.transformed(&translation)))
-    };
-
-    let mut geometry_builder = GeometryBuilder::new();
-    let corner_indices = [0, 2, 4, 6].map(|i| [i, (i + 1) % 8, (i + 2) % 8]);
-    let index_offsets = [
-        Vec2::new(-1., 1.) + Vec2::new(width, -width),
-        Vec2::new(0., 1.) + Vec2::new(0., -width),
-        Vec2::new(1., 1.) + Vec2::new(-width, -width),
-        Vec2::new(1., 0.) + Vec2::new(-width, 0.),
-        Vec2::new(1., -1.) + Vec2::new(-width, width),
-        Vec2::new(0., -1.) + Vec2::new(0., width),
-        Vec2::new(-1., -1.) + Vec2::new(width, width),
-        Vec2::new(-1., 0.) + Vec2::new(width, 0.),
-    ]
-    .map(|x| x / 2.);
-
-    let hori_edge_indices = [1, 5];
-    let vert_edge_indices = [3, 7];
-    for [i, j, k] in corner_indices {
-        let corner = maybe_corner(
-            neighbours[i],
-            neighbours[j],
-            neighbours[k],
-            index_offsets[i],
-        );
-        if let Some(corner) = corner {
-            geometry_builder = geometry_builder.add(&corner);
+pub fn select_handler(
+    mouse_world: Res<MouseWorldPos>,
+    q_grid: Query<&Grid>,
+    mut q_cells: Query<(&CellPos, &mut Text2d)>,
+) {
+    for grid in q_grid.iter() {
+        let cell_pos = (mouse_world.0 + grid.offset).round().as_ivec2();
+        println!("Cell pos: {:?}", cell_pos);
+        if cell_pos.x >= 0
+            && cell_pos.x < grid.model.size.x
+            && cell_pos.y >= 0
+            && cell_pos.y < grid.model.size.y
+        {
+            let cell = &grid.cells[cell_pos.y as usize][cell_pos.x as usize];
+            let mut text = q_cells.get_mut(*cell).unwrap().1;
+            text.0 = "2".to_string();
         }
     }
-    for i in hori_edge_indices {
-        let edge = maybe_hori_edge(neighbours[i], index_offsets[i]);
-        if let Some(edge) = edge {
-            geometry_builder = geometry_builder.add(&edge);
-        }
-    }
-    for i in vert_edge_indices {
-        let edge = maybe_vert_edge(neighbours[i], index_offsets[i]);
-        if let Some(edge) = edge {
-            geometry_builder = geometry_builder.add(&edge);
-        }
-    }
-    geometry_builder.build()
 }
