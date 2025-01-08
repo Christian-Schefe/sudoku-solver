@@ -66,18 +66,20 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
                         IVec2::new(1, 2),
                         IVec2::new(0, 2),
                         IVec2::new(4, 4),
+                        IVec2::new(5, 5),
+                        IVec2::new(6, 6),
                     ]
                     .into_iter()
                     .collect(),
                 },
                 0.1,
             ),
-            transform: Transform::from_translation(Vec3::new(0., 0., -1.)),
+            transform: Transform::from_translation(Vec3::new(0., 0., -2.) - center),
             ..Default::default()
         },
         Stroke {
             color: Color::Srgba(LIGHT_SKY_BLUE),
-            options: StrokeOptions::default().with_line_width(0.1)
+            options: StrokeOptions::default().with_line_width(0.2)
         },
         Fill::color(Color::NONE),
     ));
