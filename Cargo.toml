@@ -15,3 +15,6 @@ serde_json = "1.0.134"
 members = [
     "sudoku-solver-frontend",
 ]
+
+[profile.dev.package."*"]
+opt-level = 3

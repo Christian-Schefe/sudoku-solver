@@ -57,9 +57,15 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
             path: get_region_polygon(
                 &Region {
                     cells: [
-                        IVec2::new(1, 1),
-                        IVec2::new(1, 2),
+                        IVec2::new(0, 0),
+                        IVec2::new(0, 1),
+                        IVec2::new(1, 0),
+                        IVec2::new(2, 0),
+                        IVec2::new(2, 1),
                         IVec2::new(2, 2),
+                        IVec2::new(1, 2),
+                        IVec2::new(0, 2),
+                        IVec2::new(4, 4),
                     ]
                     .into_iter()
                     .collect(),
@@ -69,7 +75,10 @@ pub fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_translation(Vec3::new(0., 0., -1.)),
             ..Default::default()
         },
-        Stroke::new(BLACK, 0.02),
+        Stroke {
+            color: Color::Srgba(LIGHT_SKY_BLUE),
+            options: StrokeOptions::default().with_line_width(0.1)
+        },
         Fill::color(Color::NONE),
     ));
 }

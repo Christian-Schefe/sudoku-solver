@@ -1,121 +1,112 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use sudoku_solver::model::region::Region;
 
 pub fn get_region_polygon(region: &Region, inset: f32) -> Path {
-    let mut shape = PathBuilder::new();
+    let mut shape = GeometryBuilder::new();
     for line_segments in get_region_line_segments(region, inset) {
+        let mut path = PathBuilder::new();
         let mut prev = None;
         line_segments.iter().for_each(|(start, end)| {
             if let Some(prev_end) = prev {
                 if prev_end != *start {
-                    shape.line_to(*start);
+                    path.line_to(*start);
                 }
             } else {
-                shape.move_to(*start);
+                path.move_to(*start);
             }
-            shape.line_to(*end);
+            path.line_to(*end);
             prev = Some(*end);
         });
+        path.close();
+        shape = shape.add(&path.build());
     }
     shape.build()
 }
 
 fn get_region_line_segments(region: &Region, inset: f32) -> Vec<Vec<(Vec2, Vec2)>> {
-    get_region_boundaries(region)
+    let (lines, edges) = get_region_boundaries(region);
+    lines
         .into_iter()
         .map(|boundary| {
-            let outset = 0.5 - inset;
-            let line_segments = boundary.iter().map(|(pos, normal)| {
-                let dir = IVec2::new(-normal.y, normal.x);
-                let start = pos.as_vec2() + dir.as_vec2() * outset + normal.as_vec2() * outset;
-                let end = pos.as_vec2() - dir.as_vec2() * outset + normal.as_vec2() * outset;
-                (start, end)
+            let line_segments = boundary.iter().map(|(start, end)| {
+                let normal = edges[&(*start, *end)];
+                let dir = *end - *start;
+                let start = start.as_vec2() + dir.as_vec2() * inset - normal.as_vec2() * inset;
+                let end = end.as_vec2() - dir.as_vec2() * inset - normal.as_vec2() * inset;
+                let offset = Vec2::new(-0.5, -0.5);
+                (start + offset, end + offset)
             });
             line_segments.collect()
         })
         .collect()
 }
 
-fn get_region_boundaries(region: &Region) -> Vec<Vec<(IVec2, IVec2)>> {
+fn get_region_boundaries(
+    region: &Region,
+) -> (Vec<Vec<(IVec2, IVec2)>>, HashMap<(IVec2, IVec2), IVec2>) {
     let edges = get_region_edges(region);
-    let mut edge_set = edges.iter().cloned().collect::<HashSet<_>>();
     let mut all_paths = Vec::new();
+    let mut visited = HashSet::new();
 
-    fn do_edges_connect(pos1: IVec2, normal1: IVec2, pos2: IVec2, normal2: IVec2) -> bool {
-        let lrot = IVec2::new(-normal1.y, normal1.x);
-        let rrot = IVec2::new(normal1.y, -normal1.x);
-        (pos1 == pos2 && normal2 == rrot)
-                || (pos1 + normal1 == pos2 && normal2 == rrot)
-                || (pos1 == pos2 + rrot && normal2 == normal1)
-    }
-
-    while !edge_set.is_empty() {
-        let (start, start_dir) = edge_set.iter().next().copied().unwrap();
-        edge_set.remove(&(start, start_dir));
-        let mut path = vec![(start, start_dir)];
-        let mut cur = start;
-        let mut cur_normal = start_dir;
-        while let Some((next, next_normal)) = edge_set
-            .iter()
-            .find(|(pos, normal)| do_edges_connect(cur, cur_normal, *pos, *normal))
-            .copied()
-        {
-            edge_set.remove(&(next, next_normal));
-            path.push((next, next_normal));
-            cur = next;
-            cur_normal = next_normal;
+    for (edge, _) in &edges {
+        if visited.contains(edge) {
+            continue;
         }
-        path.push((start, start_dir));
+        let mut path = vec![];
+        let mut current = edge.clone();
+        while !visited.contains(&current) {
+            println!("({}, {})", current.0, current.1);
+            visited.insert(current.clone());
+            visited.insert((current.1, current.0));
+            let cur_dir = current.1 - current.0;
+            for dir in [clockwise(cur_dir), cur_dir, anticlockwise(cur_dir)] {
+                let next = (current.1, current.1 + dir);
+                if edges.contains_key(&next) {
+                    path.push(next.clone());
+                    current = next.clone();
+                    break;
+                }
+            }
+        }
         println!("{:?}", path);
         all_paths.push(path);
     }
-    println!("{:?}", all_paths);
-    all_paths
+
+    (all_paths, edges)
 }
 
-fn get_region_edges(region: &Region) -> Vec<(IVec2, IVec2)> {
-    let mut boundary = Vec::new();
+fn clockwise(vec: IVec2) -> IVec2 {
+    IVec2::new(vec.y, -vec.x)
+}
+
+fn anticlockwise(vec: IVec2) -> IVec2 {
+    IVec2::new(-vec.y, vec.x)
+}
+
+fn get_region_edges(region: &Region) -> HashMap<(IVec2, IVec2), IVec2> {
+    let mut boundary = HashMap::new();
 
     for cell in &region.cells {
         let cell = *cell;
         let neighbors = [
-            cell + IVec2::new(1, 0),
-            cell + IVec2::new(0, 1),
-            cell + IVec2::new(-1, 0),
-            cell + IVec2::new(0, -1),
+            (cell + IVec2::new(0, 1), IVec2::new(0, 1), IVec2::new(1, 0)),
+            (cell + IVec2::new(1, 0), IVec2::new(1, 0), IVec2::new(0, 1)),
+            (cell + IVec2::new(0, -1), IVec2::new(0, 0), IVec2::new(1, 0)),
+            (cell + IVec2::new(-1, 0), IVec2::new(0, 0), IVec2::new(0, 1)),
         ];
-        for neighbor in neighbors.iter() {
+        for (neighbor, start_offset, dir) in neighbors.iter() {
             if !region.cells.contains(neighbor) {
-                boundary.push((cell, *neighbor - cell));
+                let normal = *neighbor - cell;
+                let start = cell + start_offset;
+                let end = start + dir;
+                boundary.insert((start, end), normal);
+                boundary.insert((end, start), normal);
             }
         }
     }
     println!("{:?}", boundary);
-    boundary
-}
-
-fn get_region_boundary_for_start(region: &Region, start_point: IVec2) -> Vec<(IVec2, IVec2)> {
-    let mut dir = IVec2::new(-1, 0);
-    let mut cur = start_point.clone();
-
-    let mut boundary = Vec::new();
-
-    loop {
-        let mut next = cur + dir;
-        while !region.cells.contains(&next) {
-            boundary.push((cur, dir));
-            dir = IVec2::new(dir.y, -dir.x);
-            next = cur + dir;
-        }
-        cur = next;
-        dir = IVec2::new(-dir.y, dir.x);
-        if cur == start_point {
-            break;
-        }
-    }
-
     boundary
 }
