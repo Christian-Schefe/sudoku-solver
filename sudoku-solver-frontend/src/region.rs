@@ -96,7 +96,6 @@ fn get_region_boundaries(
             visited.insert(current.clone());
             visited.insert((current.1, current.0));
             let cur_dir = current.1 - current.0;
-            println!("({}, {}) {}", current.0, current.1, cur_dir);
             for dir in [clockwise(cur_dir), cur_dir, anticlockwise(cur_dir)] {
                 let next = (current.1, current.1 + dir);
                 if all_edges.contains_key(&next) {
@@ -106,7 +105,6 @@ fn get_region_boundaries(
                 }
             }
         }
-        println!("{:?}", path);
         all_paths.push(path);
     }
 
@@ -165,6 +163,5 @@ fn get_region_edges(region: &Region) -> HashMap<(IVec2, IVec2), IVec2> {
             }
         }
     }
-    println!("{:?}", boundary);
     boundary
 }

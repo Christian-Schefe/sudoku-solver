@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use bevy::{
-    color::palettes::css::{BLACK, LIGHT_SKY_BLUE},
+    color::palettes::css::LIGHT_SKY_BLUE,
     input::{
         keyboard::{Key, KeyboardInput},
         ButtonState,
@@ -35,11 +35,22 @@ struct Selector {
     line_width: f32,
 }
 
+#[derive(Event)]
+enum SpawnConstraintEvent {
+    KillerCage(i32),
+}
+
+#[derive(Resource)]
+struct Fonts {
+    fira_mono: Handle<Font>,
+}
+
 pub fn grid_plugin(app: &mut App) {
     app.insert_resource(Selection {
         cells: HashSet::new(),
     })
     .add_event::<SelectionChangedEvent>()
+    .add_event::<SpawnConstraintEvent>()
     .add_systems(Startup, setup_grid)
     .add_systems(
         Update,
@@ -47,6 +58,8 @@ pub fn grid_plugin(app: &mut App) {
             select_handler,
             handle_selection_changed_event,
             handle_type_number,
+            handle_spawn_killer_cage,
+            handle_keyboard_input_debug,
         ),
     );
 }
@@ -58,11 +71,14 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
     let center = Vec3::new(size.x as f32 / 2., size.y as f32 / 2., 0.) - Vec3::ONE * 0.5;
 
     let font = asset_server.load("FiraMono-Medium.ttf");
+    commands.insert_resource(Fonts {
+        fira_mono: font.clone(),
+    });
 
     for y in 0..size.y {
         let mut row_cells = Vec::new();
         for x in 0..size.x {
-            let vec = Vec3::new(x as f32, y as f32, 0f32);
+            let vec = Vec3::new(x as f32, y as f32, 1.);
             let cell = commands
                 .spawn((
                     Cell,
@@ -86,6 +102,7 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
             model,
         },
         Transform::from_translation(-center),
+        Visibility::Inherited,
     ));
     let grid_entity = grid.id();
     for row in cells {
@@ -97,7 +114,7 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn((
             ShapeBundle {
                 path: PathBuilder::new().build(),
-                transform: Transform::default(),
+                transform: Transform::from_translation(Vec3::ZERO),
                 ..Default::default()
             },
             Stroke {
@@ -142,7 +159,7 @@ fn setup_line(commands: &mut Commands, grid: Entity, size: IVec2, index: i32, is
                 transform: Transform::from_translation(pos),
                 ..Default::default()
             },
-            Stroke::new(BLACK, 0.02),
+            Stroke::new(Color::BLACK, 0.02),
             Fill::color(Color::NONE),
         ))
         .id();
@@ -234,10 +251,77 @@ fn handle_type_number(
             let cell_entity = grid.cells[cell_pos.y as usize][cell_pos.x as usize];
             let (_, mut cell_text) = q_cells.get_mut(cell_entity).unwrap();
             if let Some(typed) = &typed {
-                cell_text.0 += typed;
+                if typed.len() == 1 && typed.chars().all(|c| c.is_ascii_alphanumeric()) {
+                    cell_text.0 = typed.clone();
+                }
             } else {
                 cell_text.0 = "".to_string();
             }
         }
     }
+}
+
+fn handle_keyboard_input_debug(
+    keybord_button_input: Res<ButtonInput<KeyCode>>,
+    mut ev_spawn_constraint: EventWriter<SpawnConstraintEvent>,
+) {
+    if keybord_button_input.just_pressed(KeyCode::Digit1) {
+        ev_spawn_constraint.send(SpawnConstraintEvent::KillerCage(20));
+    }
+}
+
+fn handle_spawn_killer_cage(
+    mut commands: Commands,
+    fonts: Res<Fonts>,
+    q_grid: Query<(Entity, &Grid)>,
+    selection: ResMut<Selection>,
+    mut ev_spawn_constraint: EventReader<SpawnConstraintEvent>,
+) {
+    for event in ev_spawn_constraint.read() {
+        let sum = match event {
+            SpawnConstraintEvent::KillerCage(sum) => sum,
+        };
+        let region = Region {
+            cells: selection.cells.iter().cloned().collect(),
+        };
+        let path = get_region_polygon(&region, 0.1);
+
+        let cage = commands
+            .spawn((
+                ShapeBundle {
+                    path,
+                    transform: Transform::from_translation(Vec3::ZERO.with_z(0.1)),
+                    ..Default::default()
+                },
+                Stroke::new(Color::BLACK, 0.02),
+                Fill::color(Color::NONE),
+            ))
+            .id();
+
+        let mut sorted_cells = region.cells.into_iter().collect::<Vec<_>>();
+        sorted_cells.sort_by(killer_cage_ordering);
+        let text_pos = sorted_cells.first().unwrap();
+        let vec = Vec3::new(text_pos.x as f32, text_pos.y as f32, 0.) + Vec3::new(-0.25, 0.25, 0.1);
+
+        let cage_text = commands
+            .spawn((
+                Text2d(sum.to_string()),
+                Transform::from_translation(vec).with_scale(Vec3::splat(0.0033)),
+                TextFont {
+                    font: fonts.fira_mono.clone(),
+                    font_size: 60.0,
+                    ..Default::default()
+                },
+                TextColor(Color::BLACK),
+            ))
+            .id();
+
+        let (grid_entity, _) = q_grid.single();
+        commands.entity(grid_entity).add_child(cage);
+        commands.entity(cage).add_child(cage_text);
+    }
+}
+
+fn killer_cage_ordering(a: &IVec2, b: &IVec2) -> std::cmp::Ordering {
+    b.y.cmp(&a.y).then(a.x.cmp(&b.x))
 }

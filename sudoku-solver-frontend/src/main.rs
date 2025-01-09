@@ -35,8 +35,11 @@ fn mouse_world_pos(
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
+    let window = match q_window.get_single() {
+        Ok(window) => window,
+        Err(_) => return,
+    };
     let (camera, camera_transform) = q_camera.single();
-    let window = q_window.single();
 
     if let Some(world_position) = window
         .cursor_position()
