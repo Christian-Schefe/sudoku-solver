@@ -6,11 +6,11 @@ mod region;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, ShapePlugin))
-        .insert_resource(ClearColor(Color::WHITE))
+        .add_plugins((DefaultPlugins, ShapePlugin, grid::grid_plugin))
+        .insert_resource(ClearColor(Color::srgb(0.3, 0.3, 0.4)))
         .insert_resource(MouseWorldPos(Vec2::ZERO))
-        .add_systems(Startup, (setup_main, grid::setup_grid))
-        .add_systems(Update, (mouse_world_pos, grid::select_handler))
+        .add_systems(Startup, setup_main)
+        .add_systems(Update, mouse_world_pos)
         .run();
 }
 
@@ -22,7 +22,10 @@ pub struct MouseWorldPos(pub Vec2);
 
 fn setup_main(mut commands: Commands) {
     let mut proj = OrthographicProjection::default_2d();
-    proj.scaling_mode = bevy::render::camera::ScalingMode::AutoMin { min_width: 10.0, min_height: 10.0 };
+    proj.scaling_mode = bevy::render::camera::ScalingMode::AutoMin {
+        min_width: 10.0,
+        min_height: 10.0,
+    };
 
     commands.spawn((MainCamera, Camera2d, Msaa::Sample4, proj));
 }
@@ -35,11 +38,11 @@ fn mouse_world_pos(
     let (camera, camera_transform) = q_camera.single();
     let window = q_window.single();
 
-    if let Some(world_position) = window.cursor_position()
+    if let Some(world_position) = window
+        .cursor_position()
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
         .map(|ray| ray.origin.truncate())
     {
         coords.0 = world_position;
-        println!("Mouse at: {:?}", world_position);
     }
 }
