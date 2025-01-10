@@ -1,7 +1,4 @@
-use std::collections::HashSet;
-
 use bevy::{
-    color::palettes::css::LIGHT_SKY_BLUE,
     input::{
         keyboard::{Key, KeyboardInput},
         ButtonState,
@@ -9,36 +6,22 @@ use bevy::{
     prelude::*,
 };
 use bevy_prototype_lyon::prelude::*;
-use sudoku_solver::model::region::Region;
+use constraint::{CellRegion, SpawnConstraintEvent};
+use selection::{ChangeSelectionTypeEvent, SelectionType, Selector};
 
-use crate::{region::get_region_polygon, MouseWorldPos};
+use crate::stroke;
+
+mod constraint;
+mod selection;
 
 #[derive(Component)]
 struct Grid {
     cells: Vec<Vec<Entity>>,
-    model: sudoku_solver::model::SudokuModel,
+    size: IVec2,
 }
-
-#[derive(Resource)]
-struct Selection {
-    cells: HashSet<IVec2>,
-}
-
-#[derive(Event)]
-struct SelectionChangedEvent;
 
 #[derive(Component)]
 struct Cell;
-
-#[derive(Component)]
-struct Selector {
-    line_width: f32,
-}
-
-#[derive(Event)]
-enum SpawnConstraintEvent {
-    KillerCage(i32),
-}
 
 #[derive(Resource)]
 struct Fonts {
@@ -46,34 +29,26 @@ struct Fonts {
 }
 
 pub fn grid_plugin(app: &mut App) {
-    app.insert_resource(Selection {
-        cells: HashSet::new(),
-    })
-    .add_event::<SelectionChangedEvent>()
-    .add_event::<SpawnConstraintEvent>()
+    app.add_plugins((
+        selection::SelectionPlugin::new(setup_grid),
+        constraint::constraints_plugin,
+    ))
+    .add_systems(PreStartup, setup_fonts)
     .add_systems(Startup, setup_grid)
-    .add_systems(
-        Update,
-        (
-            select_handler,
-            handle_selection_changed_event,
-            handle_type_number,
-            handle_spawn_killer_cage,
-            handle_keyboard_input_debug,
-        ),
-    );
+    .add_systems(Update, (handle_type_number, handle_keyboard_input_debug));
 }
 
-fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let model = sudoku_solver::example::killer_test_model(None).build_model();
-    let mut cells = Vec::new();
-    let size = model.size;
-    let center = Vec3::new(size.x as f32 / 2., size.y as f32 / 2., 0.) - Vec3::ONE * 0.5;
-
+fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("FiraMono-Medium.ttf");
     commands.insert_resource(Fonts {
         fira_mono: font.clone(),
     });
+}
+
+fn setup_grid(mut commands: Commands, fonts: Res<Fonts>) {
+    let mut cells = Vec::new();
+    let size = IVec2::new(9, 9);
+    let center = Vec3::new(size.x as f32 / 2., size.y as f32 / 2., 0.) - Vec3::ONE * 0.5;
 
     for y in 0..size.y {
         let mut row_cells = Vec::new();
@@ -84,7 +59,7 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
                     Cell,
                     Text2d("".to_string()),
                     TextFont {
-                        font: font.clone(),
+                        font: fonts.fira_mono.clone(),
                         font_size: 60.0,
                         ..Default::default()
                     },
@@ -99,7 +74,7 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut grid = commands.spawn((
         Grid {
             cells: cells.clone(),
-            model,
+            size,
         },
         Transform::from_translation(-center),
         Visibility::Inherited,
@@ -109,23 +84,6 @@ fn setup_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
         grid.add_children(&row);
     }
 
-    let selector = Selector { line_width: 0.15 };
-    let selector_entity = commands
-        .spawn((
-            ShapeBundle {
-                path: PathBuilder::new().build(),
-                transform: Transform::from_translation(Vec3::ZERO),
-                ..Default::default()
-            },
-            Stroke {
-                color: Color::Srgba(LIGHT_SKY_BLUE),
-                options: StrokeOptions::default().with_line_width(selector.line_width),
-            },
-            Fill::color(Color::NONE),
-            selector,
-        ))
-        .id();
-    commands.entity(grid_entity).add_child(selector_entity);
     setup_grid_lines(&mut commands, grid_entity, size);
 }
 
@@ -159,75 +117,14 @@ fn setup_line(commands: &mut Commands, grid: Entity, size: IVec2, index: i32, is
                 transform: Transform::from_translation(pos),
                 ..Default::default()
             },
-            Stroke::new(Color::BLACK, 0.02),
-            Fill::color(Color::NONE),
+            stroke(Color::BLACK, 0.02, true),
         ))
         .id();
     commands.entity(grid).add_child(line);
 }
 
-fn select_handler(
-    mouse_world: Res<MouseWorldPos>,
-    mut selection: ResMut<Selection>,
-    q_grid: Query<(&Grid, &GlobalTransform)>,
-    mut ev_selection_changed: EventWriter<SelectionChangedEvent>,
-    mouse_button_input: Res<ButtonInput<MouseButton>>,
-    keybord_button_input: Res<ButtonInput<KeyCode>>,
-) {
-    let mut changed = false;
-    if mouse_button_input.just_pressed(MouseButton::Left) {
-        if !keybord_button_input.pressed(KeyCode::ShiftLeft) {
-            selection.cells.clear();
-            changed = true;
-        }
-    }
-
-    if mouse_button_input.pressed(MouseButton::Left) {
-        let (grid, grid_transform) = q_grid.single();
-        let mouse_grid_space = grid_transform
-            .affine()
-            .inverse()
-            .transform_point(mouse_world.0.extend(0.));
-        let cell_pos = mouse_grid_space.truncate().round().as_ivec2();
-        if cell_pos.x >= 0
-            && cell_pos.x < grid.model.size.x
-            && cell_pos.y >= 0
-            && cell_pos.y < grid.model.size.y
-        {
-            add_to_selection(cell_pos, &mut selection, &mut changed);
-        }
-    }
-
-    if changed {
-        ev_selection_changed.send(SelectionChangedEvent);
-    }
-}
-
-fn add_to_selection(pos: IVec2, selection: &mut Selection, ev_selection_changed: &mut bool) {
-    if selection.cells.insert(pos) {
-        *ev_selection_changed = true;
-    }
-}
-
-fn handle_selection_changed_event(
-    selection: Res<Selection>,
-    mut selection_changed_event: EventReader<SelectionChangedEvent>,
-    mut q_selector: Query<(&Selector, &mut Path)>,
-) {
-    for _ in selection_changed_event.read() {
-        let (selector, mut selector_path) = q_selector.single_mut();
-        let path = get_region_polygon(
-            &Region {
-                cells: selection.cells.iter().cloned().collect(),
-            },
-            selector.line_width / 2.,
-        );
-        selector_path.0 = path.0;
-    }
-}
-
 fn handle_type_number(
-    selection: Res<Selection>,
+    q_selection: Query<(&Selector, &CellRegion)>,
     q_grid: Query<&Grid>,
     mut q_cells: Query<(&Cell, &mut Text2d)>,
     mut keybord_button_input: EventReader<KeyboardInput>,
@@ -237,6 +134,9 @@ fn handle_type_number(
         if event.state == ButtonState::Released {
             continue;
         }
+        let Ok((_, selection)) = q_selection.get_single() else {
+            return;
+        };
         let typed = match &event.logical_key {
             Key::Character(input) => {
                 if input.chars().any(|c| c.is_control()) {
@@ -251,7 +151,7 @@ fn handle_type_number(
             let cell_entity = grid.cells[cell_pos.y as usize][cell_pos.x as usize];
             let (_, mut cell_text) = q_cells.get_mut(cell_entity).unwrap();
             if let Some(typed) = &typed {
-                if typed.len() == 1 && typed.chars().all(|c| c.is_ascii_alphanumeric()) {
+                if typed.len() == 1 && typed.chars().all(|c| c.is_ascii_digit()) {
                     cell_text.0 = typed.clone();
                 }
             } else {
@@ -264,64 +164,38 @@ fn handle_type_number(
 fn handle_keyboard_input_debug(
     keybord_button_input: Res<ButtonInput<KeyCode>>,
     mut ev_spawn_constraint: EventWriter<SpawnConstraintEvent>,
+    mut ev_change_selection_type: EventWriter<ChangeSelectionTypeEvent>,
+    q_selection_type: Query<&SelectionType>,
 ) {
-    if keybord_button_input.just_pressed(KeyCode::Digit1) {
+    if keybord_button_input.just_pressed(KeyCode::Numpad1) {
         ev_spawn_constraint.send(SpawnConstraintEvent::KillerCage(20));
     }
-}
-
-fn handle_spawn_killer_cage(
-    mut commands: Commands,
-    fonts: Res<Fonts>,
-    q_grid: Query<(Entity, &Grid)>,
-    selection: ResMut<Selection>,
-    mut ev_spawn_constraint: EventReader<SpawnConstraintEvent>,
-) {
-    for event in ev_spawn_constraint.read() {
-        let sum = match event {
-            SpawnConstraintEvent::KillerCage(sum) => sum,
-        };
-        let region = Region {
-            cells: selection.cells.iter().cloned().collect(),
-        };
-        let path = get_region_polygon(&region, 0.1);
-
-        let cage = commands
-            .spawn((
-                ShapeBundle {
-                    path,
-                    transform: Transform::from_translation(Vec3::ZERO.with_z(0.1)),
-                    ..Default::default()
-                },
-                Stroke::new(Color::BLACK, 0.02),
-                Fill::color(Color::NONE),
-            ))
-            .id();
-
-        let mut sorted_cells = region.cells.into_iter().collect::<Vec<_>>();
-        sorted_cells.sort_by(killer_cage_ordering);
-        let text_pos = sorted_cells.first().unwrap();
-        let vec = Vec3::new(text_pos.x as f32, text_pos.y as f32, 0.) + Vec3::new(-0.25, 0.25, 0.1);
-
-        let cage_text = commands
-            .spawn((
-                Text2d(sum.to_string()),
-                Transform::from_translation(vec).with_scale(Vec3::splat(0.0033)),
-                TextFont {
-                    font: fonts.fira_mono.clone(),
-                    font_size: 60.0,
-                    ..Default::default()
-                },
-                TextColor(Color::BLACK),
-            ))
-            .id();
-
-        let (grid_entity, _) = q_grid.single();
-        commands.entity(grid_entity).add_child(cage);
-        commands.entity(cage).add_child(cage_text);
+    if keybord_button_input.just_pressed(KeyCode::Numpad2) {
+        ev_spawn_constraint.send(SpawnConstraintEvent::Thermometer);
     }
-}
-
-fn killer_cage_ordering(a: &IVec2, b: &IVec2) -> std::cmp::Ordering {
-    b.y.cmp(&a.y).then(a.x.cmp(&b.x))
+    if keybord_button_input.just_pressed(KeyCode::Numpad3) {
+        ev_spawn_constraint.send(SpawnConstraintEvent::Unique);
+    }
+    if keybord_button_input.just_pressed(KeyCode::Numpad4) {
+        ev_spawn_constraint.send(SpawnConstraintEvent::Relationship(
+            sudoku_solver::model::constraint::Relationship::Double,
+        ));
+    }
+    if keybord_button_input.just_pressed(KeyCode::KeyL) {
+        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Line));
+    }
+    if keybord_button_input.just_pressed(KeyCode::KeyR) {
+        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Region));
+    }
+    if keybord_button_input.just_pressed(KeyCode::KeyE) {
+        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Edges));
+    }
+    if keybord_button_input.just_pressed(KeyCode::Space) {
+        let selection_type = q_selection_type.single();
+        ev_change_selection_type.send(ChangeSelectionTypeEvent(match selection_type {
+            SelectionType::Region => SelectionType::Line,
+            SelectionType::Line => SelectionType::Edges,
+            SelectionType::Edges => SelectionType::Region,
+        }));
+    }
 }

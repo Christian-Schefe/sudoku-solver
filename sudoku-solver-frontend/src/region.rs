@@ -2,9 +2,37 @@ use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
-use sudoku_solver::model::region::Region;
 
-pub fn get_region_polygon(region: &Region, inset: f32) -> Path {
+use crate::UnorderedPair;
+
+pub fn get_line_polygon(line: &Vec<IVec2>) -> Path {
+    let mut path = PathBuilder::new();
+    if line.is_empty() {
+        return path.build();
+    }
+    path.move_to(line[0].as_vec2());
+    for cell in line.iter() {
+        path.line_to(cell.as_vec2());
+    }
+    path.build()
+}
+
+pub fn get_edges_polygon(edges: &HashSet<UnorderedPair>) -> Path {
+    let mut shape = GeometryBuilder::new();
+    for UnorderedPair(start, end) in edges.iter() {
+        let dir = end - start;
+        let normal = IVec2::new(dir.y, -dir.x);
+        let start = start.as_vec2() + dir.as_vec2() * 0.5 + normal.as_vec2() * 0.5;
+        let end = end.as_vec2() - dir.as_vec2() * 0.5 - normal.as_vec2() * 0.5;
+        let mut path = PathBuilder::new();
+        path.move_to(start);
+        path.line_to(end);
+        shape = shape.add(&path.build());
+    }
+    shape.build()
+}
+
+pub fn get_region_polygon(region: &HashSet<IVec2>, inset: f32) -> Path {
     let mut shape = GeometryBuilder::new();
     for line_segments in get_region_line_segments(region, inset) {
         let mut path = PathBuilder::new();
@@ -26,7 +54,7 @@ pub fn get_region_polygon(region: &Region, inset: f32) -> Path {
     shape.build()
 }
 
-fn get_region_line_segments(region: &Region, inset: f32) -> Vec<Vec<(Vec2, Vec2)>> {
+fn get_region_line_segments(region: &HashSet<IVec2>, inset: f32) -> Vec<Vec<(Vec2, Vec2)>> {
     let (lines, edges) = get_region_boundaries(region);
     lines
         .into_iter()
@@ -76,7 +104,7 @@ fn get_region_line_segments(region: &Region, inset: f32) -> Vec<Vec<(Vec2, Vec2)
 }
 
 fn get_region_boundaries(
-    region: &Region,
+    region: &HashSet<IVec2>,
 ) -> (Vec<Vec<(IVec2, IVec2)>>, HashMap<(IVec2, IVec2), IVec2>) {
     let edges = get_region_edges(region);
     let all_edges = edges
@@ -139,10 +167,10 @@ fn grid_intersection(line1: &(Vec2, Vec2), line2: &(Vec2, Vec2), first_is_hori: 
     }
 }
 
-fn get_region_edges(region: &Region) -> HashMap<(IVec2, IVec2), IVec2> {
+fn get_region_edges(region: &HashSet<IVec2>) -> HashMap<(IVec2, IVec2), IVec2> {
     let mut boundary = HashMap::new();
 
-    for cell in &region.cells {
+    for cell in region.iter() {
         let cell = *cell;
         let neighbors = [
             (cell + IVec2::new(0, 1), IVec2::new(0, 1), IVec2::new(1, 0)),
@@ -155,7 +183,7 @@ fn get_region_edges(region: &Region) -> HashMap<(IVec2, IVec2), IVec2> {
             (cell + IVec2::new(-1, 0), IVec2::new(0, 0), IVec2::new(0, 1)),
         ];
         for (neighbor, start_offset, dir) in neighbors.iter() {
-            if !region.cells.contains(neighbor) {
+            if !region.contains(neighbor) {
                 let normal = *neighbor - cell;
                 let start = cell + start_offset;
                 let end = start + dir;
