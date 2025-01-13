@@ -7,7 +7,7 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 use constraint::{CellRegion, SpawnConstraintEvent};
-use selection::{ChangeSelectionTypeEvent, SelectionType, Selector};
+use selection::Selector;
 use sudoku_solver::model::constraint::Relationship;
 
 use crate::make_stroke;
@@ -165,40 +165,21 @@ fn handle_type_number(
 }
 
 fn handle_keyboard_input_debug(
-    keybord_button_input: Res<ButtonInput<KeyCode>>,
+    keyboard_button_input: Res<ButtonInput<KeyCode>>,
     mut ev_spawn_constraint: EventWriter<SpawnConstraintEvent>,
-    mut ev_change_selection_type: EventWriter<ChangeSelectionTypeEvent>,
-    q_selection_type: Query<&SelectionType>,
 ) {
-    if keybord_button_input.just_pressed(KeyCode::Numpad1) {
+    if keyboard_button_input.just_pressed(KeyCode::Numpad1) {
         ev_spawn_constraint.send(SpawnConstraintEvent::KillerCage(20));
     }
-    if keybord_button_input.just_pressed(KeyCode::Numpad2) {
+    if keyboard_button_input.just_pressed(KeyCode::Numpad2) {
         ev_spawn_constraint.send(SpawnConstraintEvent::Thermometer);
     }
-    if keybord_button_input.just_pressed(KeyCode::Numpad3) {
+    if keyboard_button_input.just_pressed(KeyCode::Numpad3) {
         ev_spawn_constraint.send(SpawnConstraintEvent::Unique);
     }
-    if keybord_button_input.just_pressed(KeyCode::Numpad4) {
+    if keyboard_button_input.just_pressed(KeyCode::Numpad4) {
         ev_spawn_constraint.send(SpawnConstraintEvent::Relationship(
             Relationship::Double,
         ));
-    }
-    if keybord_button_input.just_pressed(KeyCode::KeyL) {
-        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Line));
-    }
-    if keybord_button_input.just_pressed(KeyCode::KeyR) {
-        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Region));
-    }
-    if keybord_button_input.just_pressed(KeyCode::KeyE) {
-        ev_change_selection_type.send(ChangeSelectionTypeEvent(SelectionType::Edges));
-    }
-    if keybord_button_input.just_pressed(KeyCode::Space) {
-        let selection_type = q_selection_type.single();
-        ev_change_selection_type.send(ChangeSelectionTypeEvent(match selection_type {
-            SelectionType::Region => SelectionType::Line,
-            SelectionType::Line => SelectionType::Edges,
-            SelectionType::Edges => SelectionType::Region,
-        }));
     }
 }
