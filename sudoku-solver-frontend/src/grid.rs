@@ -8,11 +8,13 @@ use bevy::{
 use bevy_prototype_lyon::prelude::*;
 use constraint::{CellRegion, SpawnConstraintEvent};
 use selection::{ChangeSelectionTypeEvent, SelectionType, Selector};
+use sudoku_solver::model::constraint::Relationship;
 
-use crate::stroke;
+use crate::make_stroke;
 
 mod constraint;
 mod selection;
+mod menu;
 
 #[derive(Component)]
 struct Grid {
@@ -32,6 +34,7 @@ pub fn grid_plugin(app: &mut App) {
     app.add_plugins((
         selection::SelectionPlugin::new(setup_grid),
         constraint::constraints_plugin,
+        menu::menu_plugin,
     ))
     .add_systems(PreStartup, setup_fonts)
     .add_systems(Startup, setup_grid)
@@ -45,7 +48,7 @@ fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn setup_grid(mut commands: Commands, fonts: Res<Fonts>) {
+pub fn setup_grid(mut commands: Commands, fonts: Res<Fonts>) {
     let mut cells = Vec::new();
     let size = IVec2::new(9, 9);
     let center = Vec3::new(size.x as f32 / 2., size.y as f32 / 2., 0.) - Vec3::ONE * 0.5;
@@ -117,7 +120,7 @@ fn setup_line(commands: &mut Commands, grid: Entity, size: IVec2, index: i32, is
                 transform: Transform::from_translation(pos),
                 ..Default::default()
             },
-            stroke(Color::BLACK, 0.02, true),
+            make_stroke(Color::BLACK, 0.02, true),
         ))
         .id();
     commands.entity(grid).add_child(line);
@@ -178,7 +181,7 @@ fn handle_keyboard_input_debug(
     }
     if keybord_button_input.just_pressed(KeyCode::Numpad4) {
         ev_spawn_constraint.send(SpawnConstraintEvent::Relationship(
-            sudoku_solver::model::constraint::Relationship::Double,
+            Relationship::Double,
         ));
     }
     if keybord_button_input.just_pressed(KeyCode::KeyL) {

@@ -5,9 +5,9 @@ use bevy_prototype_lyon::prelude::*;
 use sudoku_solver::model::constraint::Relationship;
 
 use crate::{
-    fill,
+    make_fill,
     region::{get_line_polygon, get_region_polygon},
-    stroke, UnorderedPair,
+    make_stroke, UnorderedPair,
 };
 
 use super::{
@@ -118,7 +118,7 @@ fn handle_spawn_killer_cage(
                     transform: Transform::from_translation(Vec3::ZERO.with_z(0.1)),
                     ..Default::default()
                 },
-                stroke(Color::BLACK, 0.02, false),
+                make_stroke(Color::BLACK, 0.02, false),
             ))
             .id();
 
@@ -215,7 +215,7 @@ fn handle_spawn_thermometer(
                     transform: Transform::from_translation(Vec3::ZERO.with_z(0.05)),
                     ..Default::default()
                 },
-                stroke(color, 0.125, true),
+                make_stroke(color, 0.125, true),
                 ConstraintThermometer,
             ))
             .id();
@@ -227,7 +227,7 @@ fn handle_spawn_thermometer(
                     transform: Transform::from_translation(Vec3::ZERO.with_z(0.05)),
                     ..Default::default()
                 },
-                fill(color),
+                make_fill(color),
             ))
             .id();
 
@@ -276,7 +276,7 @@ fn handle_spawn_unique(
                     transform: Transform::from_translation(Vec3::ZERO.with_z(0.04)),
                     ..Default::default()
                 },
-                stroke(Color::BLACK, 0.04, false),
+                make_stroke(Color::BLACK, 0.04, false),
                 ConstraintUnique,
             ))
             .id();
@@ -322,8 +322,8 @@ fn handle_spawn_relationships(
                             transform: Transform::from_translation(Vec3::ZERO.with_z(0.15)),
                             ..Default::default()
                         },
-                        stroke(Color::BLACK, 0.02, false),
-                        fill(Color::WHITE),
+                        make_stroke(Color::BLACK, 0.02, false),
+                        make_fill(Color::WHITE),
                         ConstraintRelationship(relationship.clone()),
                     ))
                     .id(),
@@ -337,7 +337,7 @@ fn handle_spawn_relationships(
                             transform: Transform::from_translation(Vec3::ZERO.with_z(0.15)),
                             ..Default::default()
                         },
-                        fill(Color::BLACK),
+                        make_fill(Color::BLACK),
                         ConstraintRelationship(relationship.clone()),
                     ))
                     .id(),

@@ -5,7 +5,7 @@ use bevy_prototype_lyon::prelude::*;
 
 use crate::{
     region::{get_edges_polygon, get_line_polygon, get_region_polygon},
-    stroke, Direction, MouseWorldPos, UnorderedPair,
+    make_stroke, Direction, MouseWorldPos, UnorderedPair,
 };
 
 use super::{
@@ -73,7 +73,7 @@ pub fn setup_selector(mut commands: Commands, grid_entity: Query<Entity, With<Gr
                 transform: Transform::from_translation(Vec3::ZERO),
                 ..Default::default()
             },
-            stroke(Color::Srgba(LIGHT_SKY_BLUE), selector.line_width, true),
+            make_stroke(Color::Srgba(LIGHT_SKY_BLUE), selector.line_width, true),
             selector,
             SelectionType::Region,
             CellRegion {

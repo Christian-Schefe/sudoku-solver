@@ -20,6 +20,9 @@ pub struct MainCamera;
 #[derive(Resource)]
 pub struct MouseWorldPos(pub Vec2);
 
+#[derive(Component)]
+pub struct Container<T>(pub T);
+
 fn setup_main(mut commands: Commands) {
     let mut proj = OrthographicProjection::default_2d();
     proj.scaling_mode = bevy::render::camera::ScalingMode::AutoMin {
@@ -50,7 +53,7 @@ fn mouse_world_pos(
     }
 }
 
-fn stroke(color: Color, width: f32, round: bool) -> bevy_prototype_lyon::prelude::Stroke {
+fn make_stroke(color: Color, width: f32, round: bool) -> bevy_prototype_lyon::prelude::Stroke {
     let mut options = bevy_prototype_lyon::prelude::StrokeOptions::DEFAULT
         .with_line_width(width)
         .with_tolerance(0.001);
@@ -62,7 +65,7 @@ fn stroke(color: Color, width: f32, round: bool) -> bevy_prototype_lyon::prelude
     bevy_prototype_lyon::prelude::Stroke { color, options }
 }
 
-fn fill(color: Color) -> bevy_prototype_lyon::prelude::Fill {
+fn make_fill(color: Color) -> bevy_prototype_lyon::prelude::Fill {
     let options = bevy_prototype_lyon::prelude::FillOptions::DEFAULT.with_tolerance(0.001);
     bevy_prototype_lyon::prelude::Fill { color, options }
 }
